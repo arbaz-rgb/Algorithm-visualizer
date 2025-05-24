@@ -1,5 +1,6 @@
 import React, { Component } from "react";
-import TextLoop from "react-text-loop";
+import TextLoop from "./TextLoop";
+
 import PathFindingVisualizer from "./PathFindingVisualizer/PathFindingVisualizer";
 import SortingVisualizer from "./SortingVisualizer/SortingVisualizer";
 import "./Visualizer.css";
