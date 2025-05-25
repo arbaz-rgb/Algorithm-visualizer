@@ -1,4 +1,6 @@
 import React, { Component } from "react";
+import { initNetworkAnimation } from "./networkAnimation"; // Keep as is
+
 import PtronVisualizer from "./Perceptron/PtronVisualizer";
 import PongVisualizer from "./PongVisualizer/PongVisualizer";
 import ConnectFour from "./ConnectFourVisualizer/ConnectFour";
@@ -15,52 +17,52 @@ export default class AIVisualizer extends Component {
       reset: () => {},
     };
 
-    this.state.reset = this.state.reset.bind(this.state);
-    this.state.visualizeAI = this.state.visualizeAI.bind(this.state);
     this.getAIFunctions = this.getAIFunctions.bind(this);
     this.setAlgorithm = this.setAlgorithm.bind(this);
+  }
+
+  componentDidMount() {
+    initNetworkAnimation();
+
+    // Pass the AI algorithms and dummy go/reset/setAlgo functions to Visualizer
     this.props.getFunctions(
       () => {
-        this.state.visualizeAI();
+        // This will be updated by specific AI visualizers later via getAIFunctions
+        if (this.state.visualizeAI) this.state.visualizeAI();
       },
       () => {
-        this.state.reset();
+        if (this.state.reset) this.state.reset();
       },
       this.setAlgorithm,
       this.state.algorithms
     );
   }
 
-  componentDidMount() {
-    // combinatronics.com
-    this.newScript(
-      "https://s3-us-west-2.amazonaws.com/s.cdpn.io/499416/TweenLite.min.js"
-    );
-    this.newScript(
-      "https://s3-us-west-2.amazonaws.com/s.cdpn.io/499416/EasePack.min.js"
-    );
-    this.newScript(
-      "https://combinatronics.com/JasonFengGit/Visualizer/master/src/AIVisualizer/networkAnimation.js"
-    );
+  componentDidUpdate(prevProps, prevState) {
+    // When algorithms or functions change, update Visualizer again (optional)
+    if (prevState.algorithms !== this.state.algorithms) {
+      this.props.getFunctions(
+        () => {
+          if (this.state.visualizeAI) this.state.visualizeAI();
+        },
+        () => {
+          if (this.state.reset) this.state.reset();
+        },
+        this.setAlgorithm,
+        this.state.algorithms
+      );
+    }
   }
 
   getAIFunctions(run, reset) {
-    this.state.visualizeAI = () => {
-      run();
-    };
-    this.state.reset = () => {
-      reset();
-    };
-    this.setState({ visualizeAI: run });
-  }
-  setAlgorithm(algoId) {
-    this.setState({ currentAlgorithm: algoId });
+    this.setState({
+      visualizeAI: run,
+      reset: reset,
+    });
   }
 
-  newScript(url) {
-    var script = document.createElement("script");
-    script.src = url;
-    document.body.appendChild(script);
+  setAlgorithm(algoId) {
+    this.setState({ currentAlgorithm: algoId });
   }
 
   render() {
@@ -69,14 +71,14 @@ export default class AIVisualizer extends Component {
       case -1:
         renderObj = (
           <div>
-            <div class="textcontainer">
-              <div class="typewriter">
+            <div className="textcontainer">
+              <div className="typewriter">
                 <h1>Welcome to the Future.</h1>
               </div>
             </div>
             <div
               id="large-header"
-              class="large-header"
+              className="large-header"
               style={{ marginTop: "-18em" }}
             >
               <canvas id="demo-canvas"></canvas>
@@ -89,7 +91,7 @@ export default class AIVisualizer extends Component {
           <PtronVisualizer
             setVisualizerRendering={this.props.setVisualizerRendering}
             getFunctions={this.getAIFunctions}
-          ></PtronVisualizer>
+          />
         );
         break;
       case 1:
@@ -97,7 +99,7 @@ export default class AIVisualizer extends Component {
           <PongVisualizer
             setVisualizerRendering={this.props.setVisualizerRendering}
             getFunctions={this.getAIFunctions}
-          ></PongVisualizer>
+          />
         );
         break;
       case 2:
@@ -105,7 +107,7 @@ export default class AIVisualizer extends Component {
           <ConnectFour
             setVisualizerRendering={this.props.setVisualizerRendering}
             getFunctions={this.getAIFunctions}
-          ></ConnectFour>
+          />
         );
         break;
       case 3:
@@ -113,12 +115,13 @@ export default class AIVisualizer extends Component {
           <NNSnakeVisualizer
             setVisualizerRendering={this.props.setVisualizerRendering}
             getFunctions={this.getAIFunctions}
-          ></NNSnakeVisualizer>
+          />
         );
         break;
       default:
-        break;
+        renderObj = null;
     }
+
     return <div>{renderObj}</div>;
   }
 }

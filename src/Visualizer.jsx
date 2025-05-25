@@ -6,6 +6,10 @@ import SortingVisualizer from "./SortingVisualizer/SortingVisualizer";
 import "./Visualizer.css";
 import AIVisualizer from "./AIVisualizer/AIVisualizer";
 
+import Dropdown from "react-bootstrap/Dropdown";
+
+import "bootstrap/dist/css/bootstrap.min.css";
+
 export default class Visualizer extends Component {
   constructor(props) {
     super(props);
@@ -27,7 +31,7 @@ export default class Visualizer extends Component {
   }
 
   changeRenderingState(rendering) {
-    this.setState({ rendering: rendering });
+    this.setState({ rendering });
   }
 
   getFunctions(go, reset, setAlgo, algorithms) {
@@ -39,23 +43,50 @@ export default class Visualizer extends Component {
     });
   }
 
+  handleModeSwitch = (mode) => {
+    if (!this.state.rendering) {
+      this.setState({
+        mode,
+        currentAlgorithm: null,
+        pathClicked: mode === "pathfinding",
+        sortingClicked: mode === "sorting",
+        AIClicked: mode === "ai",
+      });
+      this.state.setAlgorithm(-1);
+    }
+  };
+
+  handleAlgorithmSelect = (algoId) => {
+    this.state.setAlgorithm(algoId);
+    this.setState({ currentAlgorithm: this.state.algorithms[algoId] });
+  };
+
   render() {
+    const {
+      rendering,
+      currentAlgorithm,
+      algorithms,
+      goFunction,
+      resetFunction,
+      mode,
+    } = this.state;
+
     let renderObj = null;
-    if (this.state.mode === "pathfinding") {
+    if (mode === "pathfinding") {
       renderObj = (
         <PathFindingVisualizer
           setVisualizerRendering={this.changeRenderingState}
           getFunctions={this.getFunctions}
         />
       );
-    } else if (this.state.mode === "sorting") {
+    } else if (mode === "sorting") {
       renderObj = (
         <SortingVisualizer
           setVisualizerRendering={this.changeRenderingState}
           getFunctions={this.getFunctions}
         />
       );
-    } else if (this.state.mode === "ai") {
+    } else if (mode === "ai") {
       renderObj = (
         <AIVisualizer
           count={this.state.aicount}
@@ -101,15 +132,7 @@ export default class Visualizer extends Component {
             <a
               href="#"
               className="mainpage-b"
-              onClick={() => {
-                if (!this.state.rendering) {
-                  this.setState({
-                    mode: "pathfinding",
-                    currentAlgorithm: null,
-                    pathClicked: true,
-                  });
-                }
-              }}
+              onClick={() => this.handleModeSwitch("pathfinding")}
               data-toggle={this.state.pathClicked ? "" : "modal"}
               data-target="#pathIntroModal"
             >
@@ -119,210 +142,127 @@ export default class Visualizer extends Component {
             <a
               href="#"
               className="mainpage-b"
-              onClick={() => {
-                if (!this.state.rendering) {
-                  this.setState({
-                    mode: "sorting",
-                    currentAlgorithm: null,
-                    sortingClicked: true,
-                  });
-                }
-              }}
+              onClick={() => this.handleModeSwitch("sorting")}
               data-toggle={this.state.sortingClicked ? "" : "modal"}
               data-target="#sortingIntroModal"
             >
               <span></span>
               SORTING
             </a>
-            <a
+            {/* <a
               href="#"
               className="mainpage-b"
-              onClick={() => {
-                if (!this.state.rendering) {
-                  this.setState({
-                    mode: "ai",
-                    currentAlgorithm: null,
-                    AIClicked: true,
-                  });
-                }
-              }}
+              onClick={() => this.handleModeSwitch("ai")}
               data-toggle={this.state.AIClicked ? "" : "modal"}
               data-target="#aiIntroModal"
             >
               <span></span>
               ARTIFICIAL INTELLIGENCE
-            </a>
+            </a> */}
           </div>
         </div>
       );
     }
-    let invisibleOrNot = "";
-    if (this.state.mode === "main") invisibleOrNot = " invisible";
-    let algorithms = this.state.algorithms;
+
+    let invisibleOrNot = mode === "main" ? " invisible" : "";
+
     return (
       <>
-        <nav className="navbar navbar-expand-lg navbar-light fixed-top bg-dark">
+        <nav className="navbar navbar-expand-lg navbar-light fixed-top bg-dark d-flex align-items-center">
           <button
-            onClick={() => {
-              if (!this.state.rendering) {
-                this.setState({ mode: "main" });
-              }
-            }}
+            onClick={() => this.handleModeSwitch("main")}
             type="button"
             className="btn btn-dark navbtn"
-            disabled={this.state.rendering}
+            disabled={rendering}
           >
             Main
           </button>
 
           <button
-            onClick={() => {
-              if (!this.state.rendering) {
-                this.setState({
-                  mode: "pathfinding",
-                  currentAlgorithm: null,
-                  pathClicked: true,
-                });
-                this.state.setAlgorithm(-1);
-              }
-            }}
+            onClick={() => this.handleModeSwitch("pathfinding")}
             type="button"
             className="btn btn-dark navbtn"
             data-toggle={this.state.pathClicked ? "" : "modal"}
             data-target="#pathIntroModal"
-            disabled={this.state.rendering}
+            disabled={rendering}
           >
             Pathfinding
           </button>
 
           <button
-            onClick={() => {
-              if (!this.state.rendering) {
-                this.setState({
-                  mode: "sorting",
-                  currentAlgorithm: null,
-                  sortingClicked: true,
-                });
-                this.state.setAlgorithm(-1);
-              }
-            }}
+            onClick={() => this.handleModeSwitch("sorting")}
             type="button"
             className="btn btn-dark navbtn"
             data-toggle={this.state.sortingClicked ? "" : "modal"}
             data-target="#sortingIntroModal"
-            disabled={this.state.rendering}
+            disabled={rendering}
           >
             Sorting
           </button>
 
-          <button
-            onClick={() => {
-              if (!this.state.rendering) {
-                this.setState({
-                  mode: "ai",
-                  currentAlgorithm: null,
-                  AIClicked: true,
-                });
-                this.state.setAlgorithm(-1);
-              }
-            }}
+          {/* <button
+            onClick={() => this.handleModeSwitch("ai")}
             type="button"
             className="btn btn-dark navbtn"
             data-toggle={this.state.AIClicked ? "" : "modal"}
             data-target="#aiIntroModal"
-            disabled={this.state.rendering}
+            disabled={rendering}
           >
             AI
-          </button>
+          </button> */}
 
-          <div className={"dropdown" + invisibleOrNot}>
-            <button
-              className="btn btn-secondary dropdown-toggle navbtn"
-              type="button"
+          <Dropdown
+            className={"dropdown " + invisibleOrNot}
+            disabled={rendering}
+          >
+            <Dropdown.Toggle
+              variant="secondary"
               id="dropdownMenuButton"
-              data-toggle="dropdown"
-              aria-haspopup="true"
-              aria-expanded="false"
-              disabled={this.state.rendering}
+              disabled={rendering}
+              className="navbtn"
             >
-              {this.state.currentAlgorithm == null
-                ? "Algorithms"
-                : this.state.currentAlgorithm}
-            </button>
-            <div className="dropdown-menu" aria-labelledby="dropdownMenuButton">
-              <li>
-                {algorithms.map((algorithm, algoId) => (
-                  <button
-                    key={algoId}
-                    type="button"
-                    className="btn btn-light navbtn"
-                    onClick={() => {
-                      this.state.setAlgorithm(algoId);
-                      this.setState({
-                        currentAlgorithm: this.state.algorithms[algoId],
-                      });
-                    }}
-                  >
-                    {algorithm}
-                  </button>
-                ))}
-              </li>
-            </div>
-          </div>
+              {currentAlgorithm == null ? "Algorithms" : currentAlgorithm}
+            </Dropdown.Toggle>
 
-          <div className={"dropdown" + invisibleOrNot}>
-            <button
-              className="btn btn-light dropdown-toggle navbtn"
-              type="button"
-              id="dropdownMenuButton"
-              data-toggle="dropdown"
-              aria-haspopup="true"
-              aria-expanded="false"
-              disabled={this.state.rendering}
+            <Dropdown.Menu>
+              {algorithms.map((algorithm, algoId) => (
+                <Dropdown.Item
+                  key={algoId}
+                  onClick={() => this.handleAlgorithmSelect(algoId)}
+                >
+                  {algorithm}
+                </Dropdown.Item>
+              ))}
+            </Dropdown.Menu>
+          </Dropdown>
+
+          <Dropdown
+            className={"dropdown " + invisibleOrNot}
+            disabled={rendering}
+          >
+            <Dropdown.Toggle
+              variant="light"
+              id="dropdownMenuButtonActions"
+              disabled={rendering}
+              className="navbtn"
             >
               Actions
-            </button>
-            <div className="dropdown-menu" aria-labelledby="dropdownMenuButton">
-              <li>
-                <button
-                  type="button"
-                  className="btn btn-light navbtn"
-                  onClick={() => this.state.goFunction()}
-                  data-toggle={
-                    this.state.currentAlgorithm === null ? "modal" : ""
-                  }
-                  data-target="#setAlgoModal"
-                  disabled={
-                    this.state.mode === "ai" &&
-                    this.state.currentAlgorithm === "Minimax"
-                  }
-                >
-                  Go!
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-light navbtn"
-                  onClick={() => this.state.resetFunction()}
-                >
-                  Reset
-                </button>
-              </li>
-            </div>
-          </div>
+            </Dropdown.Toggle>
 
-          <a
-            href="https://github.com/JasonFengGit"
-            style={{ marginLeft: "32%" }}
-          >
-            <img
-              className="githubimg"
-              src="https://github.com/JasonFengGit/Visualizer/raw/master/src/Github_icon.png"
-              width="40px"
-              height="40px"
-              style={{ opacity: "0.7" }}
-              alt="GitHub repository link"
-            />
-          </a>
+            <Dropdown.Menu>
+              <Dropdown.Item
+                onClick={() => goFunction()}
+                disabled={mode === "ai" && currentAlgorithm === "Minimax"}
+                data-toggle={currentAlgorithm === null ? "modal" : ""}
+                data-target="#setAlgoModal"
+              >
+                Go!
+              </Dropdown.Item>
+              <Dropdown.Item onClick={() => resetFunction()}>
+                Reset
+              </Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown>
         </nav>
 
         <div className="modal fade" id="setAlgoModal" role="dialog">
@@ -330,7 +270,12 @@ export default class Visualizer extends Component {
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">No Algorithm Selected</h5>
-                <button type="button" className="close" data-dismiss="modal">
+                <button
+                  type="button"
+                  className="close"
+                  data-dismiss="modal"
+                  aria-label="Close"
+                >
                   &times;
                 </button>
               </div>

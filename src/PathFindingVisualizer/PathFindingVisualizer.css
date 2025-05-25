@@ -1,5 +1,22 @@
-.grid{
-    margin-top: 75px;
-    margin-left: 0;
-    line-height: 0;
+.grid {
+  display: grid;
+  grid-template-rows: repeat(17, 25px); /* Adjust row count and size */
+  grid-template-columns: repeat(37, 25px); /* Adjust col count and size */
+  justify-content: center;
+  align-items: center;
+  gap: 0; /* This ensures there are no gaps between cells */
+}
+
+.grid > div {
+  display: contents; /* Allow direct children of .grid to render inline */
+}
+
+.node {
+  width: 25px;
+  height: 25px;
+  border: 1px solid lightgray; /* optional: for separation */
+  box-sizing: border-box;
+  display: inline-block;
+  padding: 0;
+  margin: 0;
 }

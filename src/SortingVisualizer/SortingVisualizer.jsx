@@ -27,11 +27,11 @@ export default class SortingVisualizer extends Component {
       colorSetIndex: getRandomInt(0, 3),
       currentAlgorithm: -1,
       descriptions: [
-        "Selection Sort: repeatedly find the minimum element from the unsorted part and append it to the sorted part.",
-        "Bubble Sort: repeatedly swap the adjacent elements if they are in wrong order.",
-        "Insertion Sort: repeatedly place value from the unsorted part at the correct position in the sorted part(by finding the closest left-side element that is smaller than it).",
-        "Merge Sort: divide the array into two halves, sort them recursively using merge sort, and then merge the two halves.",
-        "Quick Sort: choose an element as pivot, arrange the array such that the elements smaller than pivot are on its left and others are on its right, sort the two halves recursively.",
+        "Selection Sort: Repeatedly find the minimum element from the unsorted part and append it to the sorted part.",
+        "Bubble Sort: Repeatedly swap the adjacent elements if they are in wrong order, until the largest element is at last.",
+        "Insertion Sort: Repeatedly place value from the unsorted part at the correct position in the sorted part (by finding the closest left-side element that is smaller than it).",
+        "Merge Sort: Divide the array into two halves, sort them recursively using merge sort, and then merge the two halves.",
+        "Quick Sort: Choose an element as pivot, arrange the array such that the elements smaller than pivot are on its left and others are on its right, sort the two halves recursively.",
       ],
       unsortedPiles: [],
       speed: "median",
@@ -66,8 +66,8 @@ export default class SortingVisualizer extends Component {
     const piles = this.initializePiles();
     this.setState({
       piles: piles,
+      unsortedPiles: piles.slice(),
     });
-    this.setState({ piles: piles, unsortedPiles: piles.slice() });
   }
 
   setAlgorithm(algoId) {
@@ -99,21 +99,23 @@ export default class SortingVisualizer extends Component {
   }
 
   visualizeSorting() {
-    if (this.state.currentAlgorithm === -1) {
-      return;
-    }
-    if (this.state.rendering) return;
+    if (this.state.currentAlgorithm === -1 || this.state.rendering) return;
+
     if (this.state.finished) {
-      this.state.finished = false;
-      this.state.changingPiles = [];
-      this.state.piles = this.state.unsortedPiles;
+      this.setState({
+        finished: false,
+        changingPiles: [],
+        piles: this.state.unsortedPiles,
+      });
     }
+
     this.setState({ rendering: true });
     this.props.setVisualizerRendering(true);
     const piles = this.state.piles.slice();
 
     const statesInOrder =
       this.state.sortingAlgorithms[this.state.currentAlgorithm](piles);
+
     for (let i = 0; i < statesInOrder.length; i++) {
       const { piles: state, changing: changingPiles, pivot } = statesInOrder[i];
       setTimeout(() => {
@@ -124,6 +126,7 @@ export default class SortingVisualizer extends Component {
         });
       }, this.state.pileDelayTimes[this.state.currentAlgorithm] * i);
     }
+
     setTimeout(() => {
       this.setState({ rendering: false, finished: true });
       this.props.setVisualizerRendering(false);
@@ -132,13 +135,14 @@ export default class SortingVisualizer extends Component {
 
   randomizePiles() {
     if (this.state.rendering) return;
+    const piles = this.initializePiles();
     this.setState({
       finished: false,
       changingPiles: [],
       colorSetIndex: getRandomInt(0, 3),
+      piles: piles,
+      unsortedPiles: piles.slice(),
     });
-    const piles = this.initializePiles();
-    this.setState({ piles: piles, unsortedPiles: piles.slice() });
   }
 
   setSpeed(speed) {
@@ -151,10 +155,10 @@ export default class SortingVisualizer extends Component {
   setSize(s) {
     if (this.state.size === s) return;
     let sizes = { small: 20, median: 30, large: 40 };
-    this.setState({ size: s, numPiles: sizes[s] });
-    this.state.numPiles = sizes[s];
     const piles = this.initializePiles();
     this.setState({
+      size: s,
+      numPiles: sizes[s],
       finished: false,
       changingPiles: [],
       piles: piles,
@@ -164,129 +168,89 @@ export default class SortingVisualizer extends Component {
 
   render() {
     const piles = this.state.piles;
-    let nSquare = <p>Time Complexity: θ(n&#178;)</p>;
+    let nSquare = <p>Time Complexity: θ(n²)</p>;
     let nLogn = <p>Time Complexity: θ(n·log(n))</p>;
+
     return (
       <>
-        <div className="piles" class="container">
-          {piles.map((pile, pileId) => {
-            return (
-              <Pile
-                dummy={pileId === this.state.numPiles}
-                finished={this.state.finished}
-                className="pile"
-                key={pileId}
-                index={pileId}
-                val={pile}
-                size={this.state.size}
-                isChanging={this.state.changingPiles.indexOf(pileId) !== -1}
-                isPivot={this.state.pivot === pile}
-                colorSetIndex={this.state.colorSetIndex}
-              ></Pile>
-            );
-          })}
+        <div className="piles container">
+          {piles.map((pile, pileId) => (
+            <Pile
+              dummy={pileId === this.state.numPiles}
+              finished={this.state.finished}
+              className="pile"
+              key={pileId}
+              index={pileId}
+              val={pile}
+              size={this.state.size}
+              isChanging={this.state.changingPiles.includes(pileId)}
+              isPivot={this.state.pivot === pile}
+              colorSetIndex={this.state.colorSetIndex}
+            />
+          ))}
         </div>
 
-        <div class="d-flex" style={{ marginLeft: "37%", marginTop: "10px" }}>
-          <div class="dropdown 1">
+        <div className="d-flex control-panel">
+          <div className="dropdown">
             <button
-              class="btn btn-outline-dark dropdown-toggle"
+              className="btn btn-outline-dark dropdown-toggle"
               type="button"
               disabled={this.state.rendering}
               id="dropdownMenuSpeed"
               data-toggle="dropdown"
               aria-haspopup="true"
               aria-expanded="false"
-              style={{ marginRight: "5px", height: "30px", width: "150px" }}
             >
-              <p
-                style={{ "margin-top": "-5px" }}
-              >{`Speed: ${this.state.speed}`}</p>
+              {`Speed: ${this.state.speed}`}
             </button>
-            <div class="dropdown-menu" aria-labelledby="dropdownMenuSpeed">
-              <li>
+            <div className="dropdown-menu" aria-labelledby="dropdownMenuSpeed">
+              {["slow", "median", "fast"].map((speed) => (
                 <button
+                  key={speed}
                   type="button"
-                  class="btn btn-light navbtn"
-                  style={{ height: "30px" }}
-                  onClick={() => this.setSpeed("slow")}
+                  className="btn btn-light navbtn"
+                  onClick={() => this.setSpeed(speed)}
                 >
-                  <p style={{ "margin-top": "-5px" }}>{`slow`}</p>
+                  {speed}
                 </button>
-                <button
-                  type="button"
-                  class="btn btn-light navbtn"
-                  style={{ height: "30px" }}
-                  onClick={() => this.setSpeed("median")}
-                >
-                  <p style={{ "margin-top": "-5px" }}>{`median`}</p>
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-light navbtn"
-                  style={{ height: "30px" }}
-                  onClick={() => this.setSpeed("fast")}
-                >
-                  <p style={{ "margin-top": "-5px" }}>{`fast`}</p>
-                </button>
-              </li>
+              ))}
             </div>
           </div>
-          <div class="dropdown 1">
+
+          <div className="dropdown">
             <button
-              class="btn btn-outline-dark dropdown-toggle"
+              className="btn btn-outline-dark dropdown-toggle"
               type="button"
               disabled={this.state.rendering}
               id="dropdownMenuSize"
               data-toggle="dropdown"
               aria-haspopup="true"
               aria-expanded="false"
-              style={{ marginLeft: "5px", height: "30px", width: "150px" }}
             >
-              <p
-                style={{ "margin-top": "-5px" }}
-              >{`Size: ${this.state.size}`}</p>
+              {`Size: ${this.state.size}`}
             </button>
-            <div class="dropdown-menu" aria-labelledby="dropdownMenuSize">
-              <li>
+            <div className="dropdown-menu" aria-labelledby="dropdownMenuSize">
+              {["small", "median", "large"].map((size) => (
                 <button
+                  key={size}
                   type="button"
-                  class="btn btn-light navbtn"
-                  style={{ height: "30px" }}
-                  onClick={() => this.setSize("small")}
+                  className="btn btn-light navbtn"
+                  onClick={() => this.setSize(size)}
                 >
-                  <p style={{ "margin-top": "-5px" }}>{`small`}</p>
+                  {size}
                 </button>
-                <button
-                  type="button"
-                  class="btn btn-light navbtn"
-                  style={{ height: "30px" }}
-                  onClick={() => this.setSize("median")}
-                >
-                  <p style={{ "margin-top": "-5px" }}>{`median`}</p>
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-light navbtn"
-                  style={{ height: "30px" }}
-                  onClick={() => this.setSize("large")}
-                >
-                  <p style={{ "margin-top": "-5px" }}>{`large`}</p>
-                </button>
-              </li>
+              ))}
             </div>
           </div>
         </div>
 
-        <h6 class="algoDescription">
+        <h6 className="algoDescription">
           {this.state.currentAlgorithm === -1
             ? "Welcome to Sorting. Select an algorithm first."
             : this.state.descriptions[this.state.currentAlgorithm]}
         </h6>
-        <h5
-          class="algoComplexity"
-          style={{ marginTop: "-4.5%", color: "rgb(90,90,90)" }}
-        >
+
+        <h5 className="algoComplexity">
           {this.state.currentAlgorithm === -1
             ? ""
             : this.state.currentAlgorithm < 3
