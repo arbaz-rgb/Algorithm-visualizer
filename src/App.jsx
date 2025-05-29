@@ -6,7 +6,7 @@ import "bootstrap/dist/js/bootstrap.bundle.js";
 import { BrowserRouter } from "react-router-dom";
 
 const basename =
-  process.env.NODE_ENV === "production" ? "/algorithm-visualizer" : "/";
+  process.env.NODE_ENV === "production" ? "/" : "/";
 
 function App() {
   return (
